@@ -1,0 +1,17 @@
+body {
+    background-color: black;
+    color: white;
+}
+footer {
+    background-color: #447C2A;
+}
+
+html {
+  font-size: 10px;
+}
+
+@media (max-width: 400px) {
+  html {
+    font-size: 30px;
+  }
+}
