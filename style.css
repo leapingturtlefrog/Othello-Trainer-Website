@@ -1,15 +1,12 @@
 body {
-    background-color: white;
-    color: black;
+    background-color: black;
+    color: white;
+    text-align: center;
+    font-family: 'Roboto Slab', serif;
 }
 
-footer {
-  text-align: center;
-  font-size: 14px;
-}
-
-html {
-  font-family: 'Courier New', Courier, monospace;
+.bottom {
+  margin-top: 10000px;
 }
 
 @media (max-width: 400px) {
