@@ -5,10 +5,10 @@ body {
     font-family: 'Roboto Slab', serif;
 }
 
-a:link { color: lightskyblue; }
+a:link { color: #408FDF; }
 a:visited { color: #c59ceb; }
-a:hover { color: #ffbc2b; }
-a:active { color: #ff4040; text-decoration:none; font-weight:normal; }
+a:hover { color: lightskyblue; }
+a:active { font-weight: bold; }
 
 .bottom {
   margin-top: 10000px;
