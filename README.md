@@ -2,6 +2,6 @@
 <br><br>
 [othellotrainer.com](https://othellotrainer.com)
 <br><br>
-The actual code is at
+The application code is at
 <br>
 [github.com/leapingturtlefrog/Othello](https://github.com/leapingturtlefrog/Othello)
