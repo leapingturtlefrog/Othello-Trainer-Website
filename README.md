@@ -4,4 +4,4 @@
 <br><br>
 The application code is at
 <br>
-[github.com/leapingturtlefrog/Othello](https://github.com/leapingturtlefrog/Othello)
+[github.com/leapingturtlefrog/Othello-Trainer](https://github.com/leapingturtlefrog/Othello-Trainer)
