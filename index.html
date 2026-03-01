@@ -10,19 +10,16 @@
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
-    <h3>I (project Achronos) don't have a video but you can access the specifically trained opensource model here:<br>
+    <h3>Project Achronos: no video but the opensource model is available here and frontend preview is below:<br>
     <a href="https://huggingface.co/leapingturtlefrog/bu-30b-a3b-preview-NVFP4/tree/main">huggingface.co/leapingturtlefrog/bu-30b-a3b-preview-NVFP4</a></h3>
     <br>
-    <h3>And here is a preview of the frontend:</h3>
-    <img src="screenshot.png" alt="Frontend preview" style="max-width:100%;border-radius:8px;">
-    <br><br>
-    <h3>Results:</h3>
-    <ul style="font-size:1.2em;">
-      <li>3x faster than any browser agent depending on the task</li>
-      <li>Higher completion rate</li>
+    <ul style="font-size:1.1em;line-height:2;">
+      <li>Specifically trained the Browser Use model in a different quantization to make it 2x faster out of the box with the same accuracy</li>
+      <li>Put the browser right on the GPU for additional speed — eliminating all network latency which was another bottleneck</li>
+      <li>Gave the agent long-horizon memory and MCP access to improve overall completion rate</li>
     </ul>
     <br>
-    <h3>Most of the technology was in the GPU kernel optimizations and putting the browser on the GPU directly — eliminating all network latency for maximum speed.</h3>
+    <img src="screenshot.png" alt="Frontend preview" style="max-width:100%;border-radius:8px;">
     <br><br>
   </body>
   <script src="script.js"></script>
