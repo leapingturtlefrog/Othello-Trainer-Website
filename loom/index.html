@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>loom — one log, five apps, time-travel the whole world</title>
+<style>
+  :root{
+    --bg:#0b0d12; --bg2:#0e1117; --card:#141925; --card2:#10141d;
+    --edge:#202938; --edge2:#2b3650; --ink:#eef2fb; --mut:#8a96ad; --dim:#5d6880;
+    --cy:#5ad1ff; --vi:#b69cff; --gn:#5be39a; --am:#ffcd6b; --rd:#ff8a8a;
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+    --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:radial-gradient(1200px 700px at 70% -10%,#161d2c 0%,var(--bg) 55%);
+       color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;
+       display:flex;flex-direction:column;min-height:100vh}
+
+  /* ---------- header ---------- */
+  header{display:flex;align-items:center;gap:18px;padding:18px 26px}
+  .brand{display:flex;align-items:baseline;gap:12px}
+  .brand .logo{font-size:24px;font-weight:800;letter-spacing:-.5px}
+  .brand .logo b{color:var(--cy)}
+  .brand .tag{color:var(--mut);font-size:13px;max-width:520px}
+  .brand .tag code{color:var(--vi);font-family:var(--mono);font-size:12px}
+  .actions{margin-left:auto;display:flex;gap:10px}
+  .btn{font-family:var(--sans);font-size:13px;font-weight:600;color:var(--ink);
+       background:#1a2233;border:1px solid var(--edge);border-radius:9px;
+       padding:9px 14px;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:7px}
+  .btn:hover{border-color:var(--cy);transform:translateY(-1px)}
+  .btn.primary{background:linear-gradient(180deg,#2a3a57,#1d2840);border-color:#36507a}
+  .btn.primary:hover{border-color:var(--cy);box-shadow:0 0 0 3px rgba(90,209,255,.12)}
+  .btn:disabled{opacity:.45;cursor:default;transform:none;border-color:var(--edge)}
+
+  /* ---------- timeline ---------- */
+  .timeline{margin:6px 26px 14px;background:linear-gradient(180deg,#121826,#0e1320);
+            border:1px solid var(--edge);border-radius:16px;padding:16px 20px 18px;box-shadow:var(--shadow)}
+  .tl-top{display:flex;align-items:center;gap:14px;margin-bottom:12px}
+  .pill{font-family:var(--mono);font-size:12px;font-weight:600;padding:4px 11px;border-radius:999px;border:1px solid}
+  .pill.live{color:var(--gn);border-color:#235c43;background:rgba(91,227,154,.08)}
+  .pill.past{color:var(--am);border-color:#5e4d22;background:rgba(255,205,107,.08)}
+  .tl-top .lbl{color:var(--mut);font-size:13px}
+  .tl-top .pos{font-family:var(--mono);color:var(--ink);font-size:13px}
+  .tl-top .hint{margin-left:auto;color:var(--dim);font-size:12.5px}
+  .tl-top .hint b{color:var(--cy);font-weight:600}
+  .track{position:relative;height:40px}
+  .track .rail{position:absolute;top:18px;left:0;right:0;height:4px;border-radius:3px;background:#1b2333}
+  .track .fill{position:absolute;top:18px;left:0;height:4px;border-radius:3px;
+               background:linear-gradient(90deg,var(--vi),var(--cy))}
+  .track .ticks{position:absolute;top:14px;left:0;right:0;height:12px}
+  .track .ticks i{position:absolute;width:2px;height:12px;background:#33405a;border-radius:1px;transform:translateX(-1px)}
+  .track input[type=range]{position:absolute;top:0;left:0;width:100%;height:40px;margin:0;
+        -webkit-appearance:none;background:transparent;cursor:grab}
+  .track input[type=range]:active{cursor:grabbing}
+  .track input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;margin-top:0;
+        border-radius:50%;background:#eaf6ff;border:3px solid var(--cy);
+        box-shadow:0 2px 10px rgba(90,209,255,.5);cursor:grab}
+  .track input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
+        background:#eaf6ff;border:3px solid var(--cy);box-shadow:0 2px 10px rgba(90,209,255,.5);cursor:grab}
+
+  /* ---------- apps grid ---------- */
+  .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;padding:0 26px}
+  .app{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--edge);
+       border-radius:16px;padding:14px;min-height:248px;display:flex;flex-direction:column;
+       box-shadow:var(--shadow);transition:opacity .25s}
+  .app.travel{opacity:.92}
+  .app .head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .app .ic{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-size:14px;
+           background:#1b2434;border:1px solid var(--edge)}
+  .app .nm{font-weight:700;font-size:14px}
+  .app .st{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--dim)}
+  .app .body{flex:1;overflow:auto;font-size:13px}
+  .app .body::-webkit-scrollbar{width:6px}.app .body::-webkit-scrollbar-thumb{background:#222c3d;border-radius:3px}
+  .app .foot{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+  .mini{font-size:12px;font-weight:600;color:var(--ink);background:#1a2233;border:1px solid var(--edge);
+        border-radius:8px;padding:6px 9px;cursor:pointer;transition:.13s}
+  .mini:hover:not(:disabled){border-color:var(--cy)}
+  .mini:disabled{opacity:.4;cursor:default}
+
+  /* todo */
+  .todo li{list-style:none;display:flex;align-items:center;gap:8px;padding:4px 0;animation:pop .25s}
+  .todo .box{width:16px;height:16px;border-radius:5px;border:1.5px solid #3a475e;flex:none;display:grid;place-items:center;font-size:11px;color:#0b0d12}
+  .todo .box.on{background:var(--gn);border-color:var(--gn)}
+  .todo .done{color:var(--dim);text-decoration:line-through}
+  /* feed */
+  .feed .b{margin:6px 0;animation:pop .25s}
+  .feed .who{color:var(--vi);font-weight:700;font-size:11.5px}
+  .feed .tx{background:#1a2333;border:1px solid var(--edge);border-radius:10px;border-top-left-radius:3px;padding:6px 9px;margin-top:2px;font-size:12.5px}
+  /* video */
+  .vid .segs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
+  .vid .seg{width:30px;height:20px;border-radius:4px;background:linear-gradient(135deg,#2a3650,#1c2438);border:1px solid var(--edge);animation:pop .25s}
+  .vid .gauge{font-size:12px;color:var(--mut)}
+  .vid .num{font-family:var(--mono);color:var(--ink)}
+  .vid .meter{height:9px;border-radius:5px;background:#1a2333;overflow:hidden;margin:6px 0}
+  .vid .meter>i{display:block;height:100%;background:linear-gradient(90deg,var(--gn),var(--cy));transition:width .3s}
+  .vid .save{color:var(--gn);font-weight:700}
+  /* git */
+  .git .c{display:flex;gap:8px;align-items:flex-start;padding:4px 0;animation:pop .25s}
+  .git .dot{width:9px;height:9px;border-radius:50%;background:var(--am);margin-top:5px;flex:none;box-shadow:0 0 0 3px rgba(255,205,107,.12)}
+  .git .h{font-family:var(--mono);color:var(--am);font-size:11.5px}
+  .git .m{font-size:12.5px}
+  /* db */
+  .db table{width:100%;border-collapse:collapse;font-size:12.5px}
+  .db th{text-align:left;color:var(--dim);font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:0 4px 4px}
+  .db td{padding:4px;border-top:1px solid var(--edge)}
+  .db tr{animation:pop .25s}
+  .db .em{color:var(--mut);font-family:var(--mono);font-size:11.5px}
+  .empty{color:var(--dim);font-size:12.5px;padding:8px 2px}
+
+  /* ---------- log ledger ---------- */
+  .log{margin:16px 26px 10px;background:#070a0f;border:1px solid var(--edge);border-radius:16px;
+       box-shadow:var(--shadow);display:flex;flex-direction:column;max-height:210px}
+  .log .lh{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--edge)}
+  .log .lh .t{font-weight:700;font-size:12.5px;letter-spacing:.3px}
+  .log .lh .d{color:var(--dim);font-size:11.5px}
+  .log .lh .ct{margin-left:auto;font-family:var(--mono);color:var(--cy);font-size:12px}
+  .log .rows{overflow:auto;padding:6px 0}
+  .log .rows::-webkit-scrollbar{width:7px}.log .rows::-webkit-scrollbar-thumb{background:#1a2230;border-radius:4px}
+  .ev{display:grid;grid-template-columns:54px 130px 150px 1fr;gap:12px;padding:3px 16px;font-family:var(--mono);font-size:12px}
+  .ev:hover{background:#0c1119}
+  .ev.future{opacity:.2}
+  .ev.head{background:rgba(90,209,255,.06)}
+  .ev .p{color:var(--cy)} .ev .s{color:var(--vi)} .ev .k{color:var(--gn)} .ev .v{color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  footer{color:var(--dim);font-size:11.5px;padding:6px 26px 18px;display:flex;gap:14px;flex-wrap:wrap}
+  footer a{color:var(--mut);text-decoration:none;border-bottom:1px dotted #2c3850}
+  footer a:hover{color:var(--cy)}
+  @keyframes pop{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+  @media(max-width:1100px){.grid{grid-template-columns:repeat(2,1fr)}.brand .tag{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo"><b>loom</b></div>
+    <div class="tag">one append-only log → five live apps. every action writes one event; each app is a projection; the slider is an <code>as-of</code> read.</div>
+  </div>
+  <div class="actions">
+    <button class="btn primary" id="play">▶ Play demo</button>
+    <button class="btn" id="reset">↺ Reset</button>
+  </div>
+</header>
+
+<section class="timeline">
+  <div class="tl-top">
+    <span class="pill live" id="pill">● LIVE</span>
+    <span class="lbl">position</span><span class="pos" id="pos">0 / 0</span>
+    <span class="hint">drag to <b>time-travel every app at once</b> — no data is ever deleted</span>
+  </div>
+  <div class="track">
+    <div class="rail"></div><div class="fill" id="fill"></div>
+    <div class="ticks" id="ticks"></div>
+    <input id="slider" type="range" min="0" max="0" value="0" step="1"/>
+  </div>
+</section>
+
+<div class="grid">
+  <section class="app" id="c-todo">
+    <div class="head"><div class="ic">✓</div><div class="nm">todo</div><div class="st">todo/groceries</div></div>
+    <div class="body todo" id="v-todo"></div>
+    <div class="foot"><button class="mini" data-act="todo-add">+ add</button><button class="mini" data-act="todo-done">✓ complete</button></div>
+  </section>
+  <section class="app" id="c-feed">
+    <div class="head"><div class="ic">💬</div><div class="nm">feed</div><div class="st">topic/chat</div></div>
+    <div class="body feed" id="v-feed"></div>
+    <div class="foot"><button class="mini" data-act="feed-add">＋ send</button></div>
+  </section>
+  <section class="app" id="c-video">
+    <div class="head"><div class="ic">▣</div><div class="nm">video</div><div class="st">camera/1</div></div>
+    <div class="body vid" id="v-video"></div>
+    <div class="foot"><button class="mini" data-act="video-add">▣ segment</button><button class="mini" data-act="video-reenc">↻ re-encode</button></div>
+  </section>
+  <section class="app" id="c-git">
+    <div class="head"><div class="ic">⎇</div><div class="nm">git</div><div class="st">branch/main</div></div>
+    <div class="body git" id="v-git"></div>
+    <div class="foot"><button class="mini" data-act="git-commit">⎇ commit</button></div>
+  </section>
+  <section class="app" id="c-db">
+    <div class="head"><div class="ic">▤</div><div class="nm">db</div><div class="st">users</div></div>
+    <div class="body db" id="v-db"></div>
+    <div class="foot"><button class="mini" data-act="db-add">+ user</button><button class="mini" data-act="db-rename">✎ rename</button></div>
+  </section>
+</div>
+
+<section class="log">
+  <div class="lh"><span class="t">THE LOG</span><span class="d">one totally-ordered, append-only stream — the single source of truth</span><span class="ct" id="logct">0 events</span></div>
+  <div class="rows" id="rows"></div>
+</section>
+
+<footer>
+  <span>Backed by a verified Rust core (redb log · BLAKE3 content-addressed dedup · deterministic projections).</span>
+  <a href="https://github.com/leapingturtlefrog" target="_blank">source ↗</a>
+  <span>built at Claude Build Day 2026</span>
+</footer>
+
+<script>
+"use strict";
+// ============ the one append-only log ============
+let LOG = [];          // [{pos, stream, kind, data}]
+let viewing = 0;       // render world as-of this position
+let following = true;  // live mode tracks head
+let auto = false;
+
+const $ = s => document.querySelector(s);
+const slider=$("#slider"), rows=$("#rows");
+
+function head(){ return LOG.length; }
+function append(stream,kind,data){
+  LOG.push({pos:LOG.length+1, stream, kind, data});
+  slider.max = LOG.length;
+  if(following) viewing = LOG.length;
+  draw();
+}
+const seen = arr => arr.filter(e=>e.pos<=viewing);
+
+// ============ projections (pure folds of LOG[0..viewing]) ============
+const P = {
+  todo(){ const m=new Map();
+    for(const e of seen(LOG)){ if(e.stream!=="todo/groceries")continue;
+      if(e.kind==="TodoAdded") m.set(e.data.id,{text:e.data.text,done:false});
+      else if(e.kind==="TodoCompleted"&&m.has(e.data.id)) m.get(e.data.id).done=true;
+      else if(e.kind==="TodoRemoved") m.delete(e.data.id);
+    } return [...m.values()]; },
+  feed(){ return seen(LOG).filter(e=>e.stream==="topic/chat").map(e=>e.data); },
+  video(){ const set=new Set(); let segs=0,stored=0,dedup=0;
+    for(const e of seen(LOG)){ if(e.stream!=="camera/1")continue; segs++;
+      for(const c of e.data.chunks){ if(set.has(c)) dedup++; else{set.add(c);stored++;} } }
+    const total=stored+dedup; return {segs,stored,dedup,save: total?Math.round(100*dedup/total):0}; },
+  git(){ return seen(LOG).filter(e=>e.stream==="branch/main").map(e=>e.data); },
+  db(){ const m=new Map();
+    for(const e of seen(LOG)){ if(e.stream!=="users")continue;
+      if(e.kind==="UserCreated") m.set(e.data.id,{id:e.data.id,name:e.data.name,email:e.data.email});
+      else if(e.kind==="UserRenamed"&&m.has(e.data.id)) m.get(e.data.id).name=e.data.name;
+    } return [...m.values()]; },
+};
+
+// ============ render ============
+function draw(){ renderApps(); renderLog(); renderTimeline(); }
+
+function renderApps(){
+  const t=P.todo();
+  $("#v-todo").innerHTML = t.length ? "<ul style='margin:0;padding:0'>"+t.map(i=>
+    `<li><span class="box ${i.done?'on':''}">${i.done?'✓':''}</span><span class="${i.done?'done':''}">${esc(i.text)}</span></li>`).join("")+"</ul>"
+    : empty();
+
+  const f=P.feed();
+  $("#v-feed").innerHTML = f.length ? f.map(m=>
+    `<div class="b"><div class="who">${esc(m.who)}</div><div class="tx">${esc(m.text)}</div></div>`).join("") : empty();
+
+  const v=P.video();
+  $("#v-video").innerHTML =
+    `<div class="segs">${Array.from({length:v.segs},()=>`<div class="seg"></div>`).join("")||"<span class='empty'>no segments</span>"}</div>`+
+    `<div class="gauge">chunks stored <span class="num">${v.stored}</span> · deduped <span class="num" style="color:var(--gn)">${v.dedup}</span></div>`+
+    `<div class="meter"><i style="width:${v.save}%"></i></div>`+
+    `<div class="gauge"><span class="save">${v.save}%</span> storage saved by content-addressed dedup</div>`;
+
+  const g=P.git();
+  $("#v-git").innerHTML = g.length ? [...g].reverse().map(c=>
+    `<div class="c"><span class="dot"></span><div><span class="h">${esc(c.hash)}</span> <span class="m">${esc(c.msg)}</span></div></div>`).join("") : empty();
+
+  const d=P.db();
+  $("#v-db").innerHTML = d.length ? `<table><tr><th>name</th><th>email</th></tr>`+
+    d.map(u=>`<tr><td>${esc(u.name)}</td><td class="em">${esc(u.email)}</td></tr>`).join("")+`</table>` : empty();
+
+  const travel=!following;
+  document.querySelectorAll(".app").forEach(a=>a.classList.toggle("travel",travel));
+  document.querySelectorAll(".mini").forEach(b=>b.disabled=travel||auto);
+}
+
+function renderLog(){
+  rows.innerHTML = LOG.map(e=>{
+    const cls = e.pos>viewing?"future":(e.pos===viewing?"head":"");
+    return `<div class="ev ${cls}"><span class="p">#${e.pos}</span><span class="s">${esc(e.stream)}</span>`+
+           `<span class="k">${esc(e.kind)}</span><span class="v">${esc(JSON.stringify(e.data))}</span></div>`;
+  }).join("");
+  $("#logct").textContent = LOG.length+" event"+(LOG.length===1?"":"s");
+  const vis = rows.querySelector(".ev.head") || rows.lastElementChild;
+  if(following && rows.lastElementChild) rows.scrollTop = rows.scrollHeight;
+}
+
+function renderTimeline(){
+  slider.value=viewing;
+  $("#fill").style.width = (LOG.length? (viewing/LOG.length*100):0)+"%";
+  $("#pos").textContent = viewing+" / "+LOG.length;
+  const pill=$("#pill");
+  if(following){ pill.className="pill live"; pill.textContent="● LIVE"; }
+  else{ pill.className="pill past"; pill.textContent="⟲ AS-OF #"+viewing; }
+  // ticks
+  const tk=$("#ticks");
+  if(tk.childElementCount!==LOG.length){
+    tk.innerHTML = LOG.map((_,i)=>`<i style="left:${(i+1)/LOG.length*100}%"></i>`).join("");
+  }
+}
+
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const empty=()=>`<div class="empty">— empty —</div>`;
+
+// ============ time travel ============
+slider.addEventListener("input",()=>{
+  viewing=+slider.value; following = viewing>=LOG.length; draw();
+});
+
+// ============ content generators ============
+let uid=0; const nid=()=>"u"+(++uid);
+const GRO=["milk","eggs","sourdough","oat milk","coffee","bananas","olive oil","spinach"];
+const CHATS=[["alex","one log for everything?"],["sam","todo, chat, video, git, a DB…"],["alex","all projections of the same log"],["sam","and we can rewind all of it"],["alex","watch the slider 👇"]];
+const COMMITS=["init substrate","add blob store","fastcdc chunking","projections + pubsub","fix blob-write race"];
+const USERS=[["Ada","ada@loom.dev"],["Lin","lin@loom.dev"],["Ravi","ravi@loom.dev"],["Mei","mei@loom.dev"]];
+let gi=0,ci=0,mi=0,di=0, vseg=0;
+const chash=()=> "c"+(((vseg*2654435761)>>>0)%9000+1000).toString(16);
+
+const ACT={
+  "todo-add":()=>append("todo/groceries","TodoAdded",{id:nid(),text:GRO[gi++%GRO.length]}),
+  "todo-done":()=>{ const it=P.todo().find(x=>!x.done); if(!it)return;
+    const ev=[...LOG].find(e=>e.stream==="todo/groceries"&&e.kind==="TodoAdded"&&e.data.text===it.text);
+    if(ev) append("todo/groceries","TodoCompleted",{id:ev.data.id}); },
+  "feed-add":()=>{ const [w,t]=CHATS[ci++%CHATS.length]; append("topic/chat","Message",{who:w,text:t}); },
+  "video-add":()=>{ vseg++; append("camera/1","SegmentReady",{seg:vseg,chunks:Array.from({length:5},chash)}); },
+  "video-reenc":()=>{ const last=[...LOG].reverse().find(e=>e.stream==="camera/1"); vseg++;
+    const ch = last? [...last.data.chunks] : Array.from({length:5},chash);
+    if(last) ch[2]=chash()+"x"; // one-byte edit → only one new chunk, rest dedup
+    append("camera/1","SegmentReady",{seg:vseg,chunks:ch}); },
+  "git-commit":()=>append("branch/main","Commit",{hash:(0xa10000+LOG.length*0x111).toString(16).slice(0,6),msg:COMMITS[Math.min(LOG.length, COMMITS.length-1)>=0?(mi++%COMMITS.length):0]}),
+  "db-add":()=>{ const [n,e]=USERS[di++%USERS.length]; append("users","UserCreated",{id:nid(),name:n,email:e}); },
+  "db-rename":()=>{ const u=P.db().find(x=>!x.name.endsWith("·pro")); if(u) append("users","UserRenamed",{id:u.id,name:u.name+"·pro"}); },
+};
+document.body.addEventListener("click",e=>{
+  const b=e.target.closest(".mini"); if(!b||!following||auto)return; ACT[b.dataset.act]?.();
+});
+
+// ============ reset + autopilot ============
+function reset(){ LOG=[]; viewing=0; following=true; uid=gi=ci=mi=di=vseg=0; slider.max=0; draw(); }
+$("#reset").onclick=()=>{ if(!auto) reset(); };
+
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function play(){
+  if(auto)return; auto=true; reset(); $("#play").disabled=true; renderApps();
+  const seq=[ // a lively build-up across all five apps
+    "todo-add","feed-add","db-add","git-commit","video-add","todo-add",
+    "feed-add","todo-done","db-add","video-add","feed-add","git-commit",
+    "video-reenc","todo-add","db-rename","feed-add","git-commit","db-add","todo-done"
+  ];
+  for(const a of seq){ ACT[a](); await sleep(440); }
+  await sleep(700);
+  // ---- the moment: rewind the whole world ----
+  following=false;
+  for(let p=LOG.length; p>=1; p--){ viewing=p; draw(); await sleep(95); }
+  await sleep(900);
+  for(let p=1; p<=LOG.length; p++){ viewing=p; draw(); await sleep(70); } // fast-forward back
+  following=true; viewing=LOG.length; draw();
+  auto=false; $("#play").disabled=false; renderApps();
+}
+$("#play").onclick=play;
+
+// ============ seed so the first paint isn't empty ============
+ACT["todo-add"](); ACT["feed-add"](); ACT["git-commit"](); ACT["db-add"](); ACT["video-add"]();
+draw();
+</script>
+</body>
+</html>
