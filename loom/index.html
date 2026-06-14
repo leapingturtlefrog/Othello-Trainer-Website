@@ -128,6 +128,12 @@
   footer{color:var(--dim);font-size:11.5px;padding:6px 26px 18px;display:flex;gap:14px;flex-wrap:wrap}
   footer a{color:var(--mut);text-decoration:none;border-bottom:1px dotted #2c3850}
   footer a:hover{color:var(--cy)}
+  .replay{margin:18px 26px 4px;background:linear-gradient(180deg,#121826,#0e1320);
+          border:1px solid var(--edge);border-radius:16px;padding:14px 16px 16px;box-shadow:var(--shadow)}
+  .replay .rh{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .replay .rh .t{font-weight:700;font-size:13px}
+  .replay .rh .d{color:var(--dim);font-size:12px}
+  .replay video{width:100%;display:block;border-radius:11px;border:1px solid var(--edge);background:#000;outline:none}
   @keyframes pop{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
   @media(max-width:1100px){.grid{grid-template-columns:repeat(2,1fr)}.brand .tag{display:none}}
 </style>
@@ -188,6 +194,11 @@
 <section class="log">
   <div class="lh"><span class="t">THE LOG</span><span class="d">one totally-ordered, append-only stream — the single source of truth</span><span class="ct" id="logct">0 events</span></div>
   <div class="rows" id="rows"></div>
+</section>
+
+<section class="replay">
+  <div class="rh"><span class="t">▶ 20-second tour</span><span class="d">the demo above, recorded — build it up, then drag the slider to time-travel every app at once</span></div>
+  <video src="loom-demo.mp4" poster="loom-poster.jpg" controls playsinline preload="metadata" loop></video>
 </section>
 
 <footer>
